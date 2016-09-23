@@ -1,5 +1,3 @@
-import Data.List
-
 toSqDigitSum :: Integer -> Integer
 toSqDigitSum n = computeSum n 0
     where
@@ -18,7 +16,7 @@ isHappyNaive n = checkIt [n]
         checkIt xs
             | head xs == 1  = True
             | doubles xs    = False
-            | otherwise     = checkIt $ [toSqDigitSum (head xs)] ++ xs
+            | otherwise     = checkIt $ toSqDigitSum (head xs) : xs
 
 smallList :: [Integer]
 smallList = [n | n <- [1..243], isHappyNaive n]
