@@ -1,6 +1,6 @@
 import Data.List
 
-replaceInRow :: Char -> Int ->  String -> String
+replaceInRow :: Char -> Int -> String -> String
 replaceInRow c n xs = take (n - 1) xs ++ [c] ++ drop (n) xs
 
 findDbl :: String -> [(Char, Int)]
@@ -15,8 +15,16 @@ findHls xs = [('1', n + 2) | n <- [0..u], take 3 (drop n xs) == "0.0"]
             where
                 u = length xs - 3
 
+findLast :: String -> [(Char, Int)]
+findLast xs
+    | length (filter (== '0') xs) == (length xs) `div` 2 = [('1', n + 1) | n <- [0..l], xs !! n == '.']
+    | length (filter (== '1') xs) == (length xs) `div` 2 = [('0', n + 1) | n <- [0..l], xs !! n == '.']
+    | otherwise = []
+        where
+            l = (length xs - 1)
+
 dirFillRow :: String -> String
-dirFillRow xs = fillEm xs (findDbl xs ++ findHls xs)
+dirFillRow xs = fillEm xs (findDbl xs ++ findHls xs ++ findLast xs)
     where
         fillEm xs []     = xs
         fillEm xs (d:ds) = fillEm (replaceInRow (fst d) (snd d) xs) ds
@@ -66,19 +74,44 @@ noTriple xss = and [noTripleInRow xs | xs <- xss]
 isDone :: [String] -> Bool
 isDone = and . map (not . elem '.')
 
+tooMany :: [String] -> Bool
+tooMany xss = or [length (filter (== c) xs) > (length xs) `div` 2| c <- ['0', '1'], xs <- xss]
+
 isCorrect :: [String] -> Bool
 isCorrect xs
-    | not (isDone xs)                = False
-    | hasDoubles (transpose xs)      = False
-    | hasDoubles xs                  = False
+    | tooMany (transpose xs)         = False
+    | tooMany xs                     = False
     | not (noTriple xs)              = False
     | not (noTriple (transpose xs))  = False
     | otherwise                      = True
 
+hasDot :: [String] -> Bool
+hasDot xss = or ['.' `elem` xs | xs  <- xss]
+
+replaceFirstDot :: [String] -> Char -> [String]
+replaceFirstDot xss c = fillIt xss c 0
+    where
+        fillIt xss c n
+            | '.' `elem` xs = (takeWhile (/= '.') xs ++ [c] ++ (tail $ (dropWhile (/= '.')) xs)) : (tail xss)
+            | otherwise     = (head xss) : fillIt (tail xss) c (n + 1)
+                where
+                    xs = head xss
+
+makeAllCombs :: [String] -> [[String]]
+makeAllCombs xs = makeEm [directFill xs]
+    where
+        makeEm xss
+            | or [hasDot xs | xs <- xss] = makeEm $ filter (isCorrect) $ ds ++ [replaceFirstDot ns '0' | ns <- nss] ++ [replaceFirstDot ns '1' | ns <- nss]
+            | otherwise                  = xss
+                where
+                    ds = [xs | xs <- xss, not (hasDot xs)]
+                    nss = filter (hasDot) xss
+
+solSet :: [String] -> [[String]]
+solSet xs = filter (isCorrect) (makeAllCombs xs)
+
 isCorrectTakuzu :: [String] -> Bool
-isCorrectTakuzu xs
-    | isCorrect (directFill xs) = True
-    | otherwise                 = False
+isCorrectTakuzu xs = length [ss | ss <- (solSet xs), not(hasDoubles ss), not (hasDoubles (transpose ss))] == 1
 
 -- takuzu =    ["1.1.1.00",
 --              "..1...0.",
@@ -88,5 +121,7 @@ isCorrectTakuzu xs
 --              ".1......",
 --              "...1..0.",
 --              "11..00.0"]
+
+-- takuzu = ["110...","1...0.","..0...","11..10","....0.","......"]
 
 main =  print . isCorrectTakuzu .lines =<< getContents
