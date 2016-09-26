@@ -80,11 +80,13 @@ isCorrectTakuzu xs
     | isCorrect (directFill xs) = True
     | otherwise                 = False
 
-takuzu =    ["1.1.1.00",
-             "..1...0.",
-             ".0...1..",
-             "00....11",
-             "0..1...1",
-             ".1......",
-             "...1..0.",
-             "11..00.0"]
+-- takuzu =    ["1.1.1.00",
+--              "..1...0.",
+--              ".0...1..",
+--              "00....11",
+--              "0..1...1",
+--              ".1......",
+--              "...1..0.",
+--              "11..00.0"]
+
+main =  print . isCorrectTakuzu .lines =<< getContents
