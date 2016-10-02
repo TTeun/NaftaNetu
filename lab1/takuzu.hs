@@ -55,7 +55,7 @@ directFill xs = fillIt xs (fillAll xs)
             | xs == ys  = xs
             | otherwise = directFill ys
 
-
+-- from here only for the check if it is a correct takuzu for all possibility
 hasDoubles :: Eq a => [a] -> Bool
 hasDoubles []     = False
 hasDoubles (x:xs) = (x `elem` xs) || hasDoubles xs
@@ -85,6 +85,7 @@ isCorrect xs
     | not (noTriple (transpose xs))  = False
     | otherwise                      = True
 
+-- alle combinaties maken en solutions maken
 hasDot :: [String] -> Bool
 hasDot xss = or ['.' `elem` xs | xs  <- xss]
 
